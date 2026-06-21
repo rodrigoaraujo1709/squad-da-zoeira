@@ -5,9 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Álbum digital Squad da Zoeira com player, tracklist e letras.">
   <title>Squad da Zoeira</title>
+  <!-- Favicon: use a capa do álbum para funcionar direto no GitHub Pages. -->
+  <link rel="icon" type="image/png" href="Img/Pagina0.png">
+  <link rel="apple-touch-icon" href="Img/Pagina0.png">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="splash-active">
+  <!-- Splash Screen: introdução cinematográfica executada uma vez por carregamento. -->
+  <div id="splashScreen" class="splash-screen" aria-label="Tela de abertura do álbum">
+    <div class="splash-glow" aria-hidden="true"></div>
+    <div class="splash-content">
+      <p class="splash-kicker">OPENAI PRESENTS</p>
+      <h1>SQUAD DA ZOEIRA</h1>
+      <p class="splash-years">2009 - 2026</p>
+      <p class="splash-tagline">AMIGOS • GUERRA • VITÓRIA</p>
+    </div>
+  </div>
+
   <div class="stage-shell">
     <header class="album-header" aria-label="Capa e player do álbum">
       <section class="cover-panel" aria-labelledby="album-title">
@@ -95,8 +109,13 @@
               <img id="bookletCoverImage" src="Img/Pagina0.png" alt="Capa do CD fechado Squad da Zoeira">
             </div>
 
-            <div id="bookletLeaf" class="booklet-leaf">
-              <img id="bookletPageImage" src="Img/Pagina2.png" alt="Página 1 do livreto do álbum">
+            <div id="bookletLeaf" class="booklet-leaf" aria-label="Página atual do livreto">
+              <div class="booklet-page booklet-page-front">
+                <img id="bookletPageImage" src="Img/Pagina2.png" alt="Página 1 do livreto do álbum">
+              </div>
+              <div class="booklet-page booklet-page-back" aria-hidden="true">
+                <img id="bookletPageBackImage" src="Img/Pagina3.png" alt="">
+              </div>
             </div>
           </div>
         </div>

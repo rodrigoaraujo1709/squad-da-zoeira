@@ -96,10 +96,12 @@ const discStatus = document.querySelector("#discStatus");
 const progressBar = document.querySelector("#progressBar");
 const currentTimeLabel = document.querySelector("#currentTime");
 const durationLabel = document.querySelector("#duration");
+const splashScreen = document.querySelector("#splashScreen");
 const bookletViewer = document.querySelector("#bookletViewer");
 const bookletCoverImage = document.querySelector("#bookletCoverImage");
 const bookletDiscImage = document.querySelector("#bookletDiscImage");
 const bookletPageImage = document.querySelector("#bookletPageImage");
+const bookletPageBackImage = document.querySelector("#bookletPageBackImage");
 const bookletLeaf = document.querySelector("#bookletLeaf");
 const openBookletBtn = document.querySelector("#openBookletBtn");
 const prevBookletBtn = document.querySelector("#prevBookletBtn");
@@ -109,6 +111,15 @@ const bookletCounter = document.querySelector("#bookletCounter");
 
 let currentTrackIndex = 0;
 let isSeeking = false;
+
+// Splash Screen: ajuste estes tempos para deixar a abertura mais curta ou longa.
+const SPLASH_VISIBLE_MS = 3300;
+const SPLASH_FADE_MS = 900;
+
+// Booklet 3D: tempos das etapas físicas CD -> encarte -> páginas.
+const BOOKLET_DISC_STEP_MS = 820;
+const BOOKLET_OPEN_STEP_MS = 720;
+const BOOKLET_PAGE_TURN_MS = 680;
 
 // Troque aqui as imagens da caixa fechada e do CD interno.
 const bookletCover = "Img/Pagina0.png";
@@ -306,61 +317,122 @@ progressBar.addEventListener("change", () => {
   isSeeking = false;
 });
 
+function initSplashScreen() {
+  if (!splashScreen) {
+    document.body.classList.remove("splash-active");
+    return;
+  }
+
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const visibleTime = prefersReducedMotion ? 250 : SPLASH_VISIBLE_MS;
+  const fadeTime = prefersReducedMotion ? 120 : SPLASH_FADE_MS;
+
+  window.setTimeout(() => {
+    splashScreen.classList.add("is-leaving");
+    document.body.classList.remove("splash-active");
+
+    window.setTimeout(() => {
+      splashScreen.remove();
+    }, fadeTime);
+  }, visibleTime);
+}
+
+function getBookletPageIndex(index) {
+  const lastPageIndex = bookletPages.length - 1;
+  return Math.min(Math.max(index, 0), lastPageIndex);
+}
+
+function setBookletPageImages(frontIndex, backIndex = frontIndex) {
+  const safeFrontIndex = getBookletPageIndex(frontIndex);
+  const safeBackIndex = getBookletPageIndex(backIndex);
+
+  bookletPageImage.src = bookletPages[safeFrontIndex];
+  bookletPageImage.alt = `Página ${safeFrontIndex + 1} do livreto do álbum`;
+  bookletPageBackImage.src = bookletPages[safeBackIndex];
+}
+
 function updateBookletControls() {
-  if (!bookletCounter) {
+  if (!bookletCounter || !bookletPages.length) {
     return;
   }
 
   const totalPages = bookletPages.length;
-  const canUseBooklet = isBookletOpen && !isBookletAnimating;
+  const canNavigate = isBookletOpen && !isBookletAnimating;
 
-  openBookletBtn.disabled = isBookletOpen;
-  closeBookletBtn.disabled = !canUseBooklet;
-  prevBookletBtn.disabled = !canUseBooklet || currentBookletPage === 0;
-  nextBookletBtn.disabled = !canUseBooklet || currentBookletPage === totalPages - 1;
-  bookletCounter.hidden = !canUseBooklet;
-  bookletCounter.textContent = canUseBooklet ? `Página ${currentBookletPage + 1} de ${totalPages}` : "";
+  openBookletBtn.disabled = isBookletOpen || isBookletAnimating;
+  openBookletBtn.textContent = isBookletOpen ? (isBookletAnimating ? "Abrindo..." : "CD aberto") : "Abrir CD";
+  closeBookletBtn.disabled = !canNavigate;
+  prevBookletBtn.disabled = !canNavigate || currentBookletPage === 0;
+  nextBookletBtn.disabled = !canNavigate || currentBookletPage === totalPages - 1;
+  bookletCounter.hidden = !isBookletOpen;
+  bookletCounter.textContent = isBookletOpen ? `Página ${currentBookletPage + 1} de ${totalPages}` : "";
 }
 
-function showBookletPage(index, direction = "next") {
-  const lastPageIndex = bookletPages.length - 1;
-  const nextIndex = Math.min(Math.max(index, 0), lastPageIndex);
+function showBookletPage(index, direction = "next", instant = false) {
+  const targetIndex = getBookletPageIndex(index);
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  if (nextIndex === currentBookletPage && bookletPageImage.src.includes(bookletPages[nextIndex])) {
+  if (targetIndex === currentBookletPage && !instant) {
     updateBookletControls();
     return;
   }
 
-  currentBookletPage = nextIndex;
-  bookletPageImage.src = bookletPages[currentBookletPage];
-  bookletPageImage.alt = `Página ${currentBookletPage + 1} do livreto do álbum`;
+  if (instant || prefersReducedMotion) {
+    currentBookletPage = targetIndex;
+    setBookletPageImages(currentBookletPage, currentBookletPage + 1);
+    updateBookletControls();
+    return;
+  }
+
+  if (isBookletAnimating) {
+    return;
+  }
+
+  isBookletAnimating = true;
+  updateBookletControls();
 
   const turnClass = direction === "prev" ? "is-turning-prev" : "is-turning-next";
+  setBookletPageImages(currentBookletPage, targetIndex);
   bookletLeaf.classList.remove("is-turning-prev", "is-turning-next");
   void bookletLeaf.offsetWidth;
   bookletLeaf.classList.add(turnClass);
-  window.setTimeout(() => bookletLeaf.classList.remove(turnClass), 480);
 
-  updateBookletControls();
+  window.setTimeout(() => {
+    currentBookletPage = targetIndex;
+    setBookletPageImages(currentBookletPage, currentBookletPage + 1);
+    bookletLeaf.classList.remove("is-turning-prev", "is-turning-next");
+    isBookletAnimating = false;
+    updateBookletControls();
+  }, BOOKLET_PAGE_TURN_MS);
 }
 
 function openBooklet() {
-  if (isBookletOpen) {
+  if (isBookletOpen || isBookletAnimating) {
     return;
   }
 
   isBookletOpen = true;
   isBookletAnimating = true;
   currentBookletPage = 0;
+  setBookletPageImages(0, 1);
+  bookletViewer.classList.remove("is-showing-disc", "is-opening-booklet", "is-open");
   bookletViewer.classList.add("is-opening");
   updateBookletControls();
 
   window.setTimeout(() => {
-    isBookletAnimating = false;
-    bookletViewer.classList.remove("is-opening");
+    bookletViewer.classList.add("is-showing-disc");
+  }, BOOKLET_DISC_STEP_MS);
+
+  window.setTimeout(() => {
+    bookletViewer.classList.add("is-opening-booklet");
+  }, BOOKLET_DISC_STEP_MS + 360);
+
+  window.setTimeout(() => {
+    bookletViewer.classList.remove("is-opening", "is-showing-disc", "is-opening-booklet");
     bookletViewer.classList.add("is-open");
-    showBookletPage(0);
-  }, 720);
+    isBookletAnimating = false;
+    showBookletPage(0, "next", true);
+  }, BOOKLET_DISC_STEP_MS + BOOKLET_OPEN_STEP_MS + 560);
 }
 
 function closeBooklet() {
@@ -370,9 +442,8 @@ function closeBooklet() {
 
   isBookletOpen = false;
   currentBookletPage = 0;
-  bookletViewer.classList.remove("is-opening", "is-open");
-  bookletPageImage.src = bookletPages[0];
-  bookletPageImage.alt = "Página 1 do livreto do álbum";
+  bookletViewer.classList.remove("is-opening", "is-showing-disc", "is-opening-booklet", "is-open");
+  setBookletPageImages(0, 1);
   updateBookletControls();
 }
 
@@ -393,10 +464,12 @@ function initBooklet() {
     return;
   }
 
+  // Booklet 3D: capa fechada, CD interno e primeira página do encarte.
   bookletCoverImage.src = bookletCover;
   bookletDiscImage.src = bookletDisc;
-  bookletPageImage.src = bookletPages[0];
+  setBookletPageImages(0, 1);
 
+  // Navegação do livreto: botões e swipe mobile.
   openBookletBtn.addEventListener("click", openBooklet);
   closeBookletBtn.addEventListener("click", closeBooklet);
   nextBookletBtn.addEventListener("click", showNextBookletPage);
@@ -432,6 +505,7 @@ function initBooklet() {
   updateBookletControls();
 }
 
+initSplashScreen();
 renderTrackList();
 loadTrack(0);
 initBooklet();
