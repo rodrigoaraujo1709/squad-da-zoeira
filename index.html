@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Álbum digital Squad da Zoeira com player, tracklist e letras.">
+  <title>Squad da Zoeira</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="stage-shell">
+    <header class="album-header" aria-label="Capa e player do álbum">
+      <section class="cover-panel" aria-labelledby="album-title">
+        <div class="album-cover-frame">
+          <img src="Img/Pagina0.png" alt="Capa do álbum Squad da Zoeira" class="album-cover">
+        </div>
+
+        <div class="disc-zone" aria-label="CD do album">
+          <div id="disc" class="disc">
+            <img src="Img/Pagina1.png" alt="Imagem do CD do álbum">
+            <span class="disc-hole" aria-hidden="true"></span>
+          </div>
+          <p class="disc-status" id="discStatus">CD em espera</p>
+        </div>
+      </section>
+
+      <section class="player-panel" aria-labelledby="album-title">
+        <p class="kicker">Edição de combate / CD player</p>
+        <h1 id="album-title">Squad da Zoeira</h1>
+
+        <div class="now-playing" aria-live="polite">
+          <span id="trackNumber" class="track-number">Faixa 01</span>
+          <h2 id="trackTitle">Squad da Zoeira em Verdansk</h2>
+        </div>
+
+        <audio id="audioPlayer" preload="metadata"></audio>
+
+        <div class="transport" aria-label="Controles do player">
+          <button id="prevBtn" class="control-button secondary" type="button" aria-label="Faixa anterior">
+            <span aria-hidden="true">‹</span>
+            <span>Anterior</span>
+          </button>
+          <button id="playPauseBtn" class="control-button primary" type="button" aria-label="Tocar">
+            <span id="playIcon" aria-hidden="true">▶</span>
+            <span id="playLabel">Tocar</span>
+          </button>
+          <button id="nextBtn" class="control-button secondary" type="button" aria-label="Próxima faixa">
+            <span>Próxima</span>
+            <span aria-hidden="true">›</span>
+          </button>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="time-row">
+            <span id="currentTime">0:00</span>
+            <span id="duration">0:00</span>
+          </div>
+          <input id="progressBar" class="progress-bar" type="range" min="0" max="100" value="0" step="0.1" aria-label="Progresso da música">
+        </div>
+      </section>
+    </header>
+
+    <main class="content-grid">
+      <section class="tracklist-panel" aria-labelledby="tracklist-title">
+        <div class="section-heading">
+          <p>Tracklist oficial</p>
+          <h2 id="tracklist-title">Missões do disco</h2>
+        </div>
+        <ol id="trackList" class="track-list"></ol>
+      </section>
+
+      <section class="lyrics-panel" aria-labelledby="lyrics-title">
+        <div class="section-heading">
+          <p id="lyricsEyebrow">Letra completa</p>
+          <h2 id="lyrics-title">Carregando letra...</h2>
+        </div>
+        <pre id="lyricsContent" class="lyrics-content">Preparando encarte...</pre>
+      </section>
+    </main>
+
+    <section class="booklet-panel" aria-labelledby="booklet-title">
+      <div class="section-heading">
+        <p>Experiência física</p>
+        <h2 id="booklet-title">Livreto do Álbum</h2>
+      </div>
+
+      <div class="booklet-layout">
+        <div id="bookletViewer" class="booklet-viewer" aria-live="polite">
+          <div class="jewel-case" aria-label="Caixa de CD do álbum">
+            <div class="case-tray">
+              <img id="bookletDiscImage" src="Img/Pagina1.png" alt="CD do álbum Squad da Zoeira">
+            </div>
+
+            <div class="case-lid">
+              <img id="bookletCoverImage" src="Img/Pagina0.png" alt="Capa do CD fechado Squad da Zoeira">
+            </div>
+
+            <div id="bookletLeaf" class="booklet-leaf">
+              <img id="bookletPageImage" src="Img/Pagina2.png" alt="Página 1 do livreto do álbum">
+            </div>
+          </div>
+        </div>
+
+        <div class="booklet-controls" aria-label="Controles do livreto">
+          <button id="openBookletBtn" class="control-button primary" type="button">Abrir CD</button>
+          <button id="prevBookletBtn" class="control-button secondary" type="button" disabled>
+            <span aria-hidden="true">◀</span>
+            <span>Página anterior</span>
+          </button>
+          <span id="bookletCounter" class="booklet-counter" aria-live="polite" hidden></span>
+          <button id="nextBookletBtn" class="control-button secondary" type="button" disabled>
+            <span>Próxima página</span>
+            <span aria-hidden="true">▶</span>
+          </button>
+          <button id="closeBookletBtn" class="control-button secondary" type="button" disabled>
+            <span aria-hidden="true">✕</span>
+            <span>Fechar livreto</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
